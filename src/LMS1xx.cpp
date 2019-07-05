@@ -49,7 +49,6 @@ void LMS1xx::connect(std::string host, int port)
 {
   if (!connected_)
   {
-    // logDebug("Creating non-blocking socket.");
     ROS_DEBUG("Creating non-blocking socket.");
     socket_fd_ = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (socket_fd_)
@@ -59,14 +58,12 @@ void LMS1xx::connect(std::string host, int port)
       stSockAddr.sin_port = htons(port);
       inet_pton(AF_INET, host.c_str(), &stSockAddr.sin_addr);
 
-      // logDebug("Connecting socket to laser.");
       ROS_DEBUG("Connecting socket to laser.");
       int ret = ::connect(socket_fd_, (struct sockaddr *) &stSockAddr, sizeof(stSockAddr));
 
       if (ret == 0)
       {
         connected_ = true;
-        // logDebug("Connected succeeded.");
         ROS_DEBUG("Connected succeeded.");
       }
     }
@@ -96,10 +93,8 @@ void LMS1xx::startMeas()
 
   int len = read(socket_fd_, buf, 100);
   if (buf[0] != 0x02)
-    // logWarn("invalid packet recieved");
     ROS_WARN("invalid packet recieved");
   buf[len] = 0;
-  // logDebug("RX: %s", buf);
   ROS_DEBUG("RX: %s", buf);
 }
 
@@ -112,10 +107,8 @@ void LMS1xx::stopMeas()
 
   int len = read(socket_fd_, buf, 100);
   if (buf[0] != 0x02)
-    // logWarn("invalid packet recieved");
     ROS_WARN("invalid packet recieved");
   buf[len] = 0;
-  // logDebug("RX: %s", buf);
   ROS_DEBUG("RX: %s", buf);
 }
 
@@ -128,11 +121,9 @@ status_t LMS1xx::queryStatus()
 
   int len = read(socket_fd_, buf, 100);
   if (buf[0] != 0x02)
-    // logWarn("invalid packet recieved");
     ROS_WARN("invalid packet recieved");
 
   buf[len] = 0;
-  // logDebug("RX: %s", buf);
   ROS_DEBUG("RX: %s", buf);
 
   int ret;
@@ -167,10 +158,8 @@ void LMS1xx::login()
 
   int len = read(socket_fd_, buf, 100);
   if (buf[0] != 0x02)
-    // logWarn("invalid packet recieved");
     ROS_DEBUG("invalid packet recieved");
   buf[len] = 0;
-  // logDebug("RX: %s", buf);
   ROS_DEBUG("RX: %s", buf);
 }
 
@@ -184,10 +173,8 @@ scanCfg LMS1xx::getScanCfg() const
 
   int len = read(socket_fd_, buf, 100);
   if (buf[0] != 0x02)
-    // logWarn("invalid packet recieved");
     ROS_WARN("invalid packet recieved");
   buf[len] = 0;
-  // logDebug("RX: %s", buf);
   ROS_DEBUG("RX: %s", buf);
 
   sscanf(buf + 1, "%*s %*s %X %*d %X %X %X", &cfg.scaningFrequency,
@@ -216,7 +203,6 @@ void LMS1xx::setScanDataCfg(const scanDataCfg &cfg)
           "sWN LMDscandatacfg", cfg.outputChannel, cfg.remission ? 1 : 0,
           cfg.resolution, cfg.encoder, cfg.position ? 1 : 0,
           cfg.deviceName ? 1 : 0, cfg.timestamp ? 1 : 0, cfg.outputInterval, 0x03);
-  // logDebug("TX: %s", buf);
   ROS_DEBUG("TX: %s", buf);
 
   write(socket_fd_, buf, strlen(buf));
@@ -250,11 +236,9 @@ void LMS1xx::scanContinous(int start)
   int len = read(socket_fd_, buf, 100);
 
   if (buf[0] != 0x02)
-    // logError("invalid packet recieved");
     ROS_ERROR("invalid packet recieved");
 
   buf[len] = 0;
-  // logDebug("RX: %s", buf);
   ROS_DEBUG("RX: %s", buf);
 }
 
@@ -273,11 +257,9 @@ bool LMS1xx::getScanData(scanData* scan_data)
     tv.tv_sec = 0;
     tv.tv_usec = 100000;
 
-    // logDebug("entering select()", tv.tv_usec);
     ROS_DEBUG("entering select(%ld)", tv.tv_usec);
 
     int retval = select(socket_fd_ + 1, &rfds, NULL, NULL, &tv);
-    // logDebug("returned %d from select()", retval);
     ROS_DEBUG("returned %d from select()", retval);
 
     if (retval)
@@ -336,7 +318,6 @@ void LMS1xx::parseScanData(char* buffer, scanData* data)
   tok = strtok(NULL, " "); //NumberChannels16Bit
   int NumberChannels16Bit;
   sscanf(tok, "%d", &NumberChannels16Bit);
-  // logDebug("NumberChannels16Bit : %d", NumberChannels16Bit);
   ROS_DEBUG("NumberChannels16Bit : %d", NumberChannels16Bit);
 
   for (int i = 0; i < NumberChannels16Bit; i++)
@@ -368,7 +349,6 @@ void LMS1xx::parseScanData(char* buffer, scanData* data)
     tok = strtok(NULL, " "); //NumberData
     int NumberData;
     sscanf(tok, "%X", &NumberData);
-    // logDebug("NumberData : %d", NumberData);
     ROS_DEBUG("NumberData : %d", NumberData);
 
     if (type == 0)
@@ -417,7 +397,6 @@ void LMS1xx::parseScanData(char* buffer, scanData* data)
   tok = strtok(NULL, " "); //NumberChannels8Bit
   int NumberChannels8Bit;
   sscanf(tok, "%d", &NumberChannels8Bit);
-  // logDebug("NumberChannels8Bit : %d\n", NumberChannels8Bit);
   ROS_DEBUG("NumberChannels8Bit : %d\n", NumberChannels8Bit);
 
   for (int i = 0; i < NumberChannels8Bit; i++)
@@ -449,7 +428,6 @@ void LMS1xx::parseScanData(char* buffer, scanData* data)
     tok = strtok(NULL, " "); //NumberData
     int NumberData;
     sscanf(tok, "%X", &NumberData);
-    // logDebug("NumberData : %d\n", NumberData);
     ROS_DEBUG("NumberData : %d\n", NumberData);
 
     if (type == 0)
@@ -504,10 +482,8 @@ void LMS1xx::saveConfig()
   int len = read(socket_fd_, buf, 100);
 
   if (buf[0] != 0x02)
-    // logWarn("invalid packet recieved");
     ROS_WARN("invalid packet recieved");
   buf[len] = 0;
-  // logDebug("RX: %s", buf);
   ROS_DEBUG("RX: %s", buf);
 }
 
@@ -521,9 +497,7 @@ void LMS1xx::startDevice()
   int len = read(socket_fd_, buf, 100);
 
   if (buf[0] != 0x02)
-    // logWarn("invalid packet recieved");
     ROS_WARN("invalid packet recieved");
   buf[len] = 0;
-  // logDebug("RX: %s", buf);
   ROS_DEBUG("RX: %s", buf);
 }
