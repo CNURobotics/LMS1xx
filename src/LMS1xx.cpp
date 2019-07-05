@@ -274,7 +274,7 @@ bool LMS1xx::getScanData(scanData* scan_data)
     tv.tv_usec = 100000;
 
     // logDebug("entering select()", tv.tv_usec);
-    ROS_DEBUG("entering select()", tv.tv_usec);
+    ROS_DEBUG("entering select(%ld)", tv.tv_usec);
 
     int retval = select(socket_fd_ + 1, &rfds, NULL, NULL, &tv);
     // logDebug("returned %d from select()", retval);
